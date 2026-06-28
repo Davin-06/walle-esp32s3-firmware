@@ -1,0 +1,12 @@
+.pio/
+.vscode/
+.idea/
+build/
+dist/
+*.bin
+*.elf
+*.map
+*.log
+src/secrets.h
+sdkconfig.esp32-*
+compile_commands.json
