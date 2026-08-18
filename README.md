@@ -1,26 +1,27 @@
 # WALL-E ESP32-S3 Voice Assistant Firmware
 
-ESP32-S3-WROOM-1 N16R8 固件，用于一个中文语音/网页对话机器人助手。开发板会启动配置热点，手机连接后进入网页配置 Wi-Fi，并可通过 DeepSeek API 进行联网聊天。
+![ESP32-S3](https://img.shields.io/badge/Board-ESP32--S3-000000)
+![PlatformIO](https://img.shields.io/badge/Build-PlatformIO-F5822A)
+![Arduino](https://img.shields.io/badge/Framework-Arduino-00979D)
+![C++](https://img.shields.io/badge/Language-C%2B%2B-00599C)
 
-> 安全说明：仓库不包含任何 DeepSeek API key。请勿把自己的密钥提交到 GitHub。
+ESP32-S3-WROOM-1 N16R8 固件项目，用于制作一个 WALL-E 风格的语音/网页交互助手。固件内置 Wi-Fi 配网热点、网页控制台、联网文字对话、天气查询、SD 卡检测、I2S 扬声器测试和 INMP441 麦克风电平检测。
 
-## 功能
+English: ESP32-S3 firmware for a WALL-E style assistant with Wi-Fi setup portal, web console, chat API, weather, SD card support, I2S speaker and microphone test.
 
-- 开机创建 `WALL-E-Setup` 配置热点，默认密码 `12345678`
-- 手机连接热点后打开 `192.168.4.1` 进入配置页
-- 支持扫描和切换 Wi-Fi
-- 支持校园网/公共网络的 HTTP 认证页探测
-- 连接 Wi-Fi 后开启 NAT，手机可通过开发板热点辅助访问认证页
-- 连接成功后板载灯显示蓝色
-- 网页文字对话测试
-- DeepSeek 联网中文聊天
-- Open-Meteo 天气查询
-- 短期对话记忆
-- SD 卡检测和离线备用回复
-- I2S 扬声器测试音、回复提示音、音量调节
-- INMP441 麦克风电平检测和“喊话触发提示音”硬件测试
+## 项目亮点
 
-## 硬件
+- 开机自动创建 `WALL-E-Setup` 配网热点。
+- 手机连接热点后可进入网页控制台配置 Wi-Fi。
+- 支持校园网/公共网络 HTTP 认证入口探测。
+- 支持联网文字对话和短期上下文记忆。
+- 支持 Open-Meteo 天气查询。
+- 支持 SD 卡挂载检测和离线备用回复。
+- 支持 MAX98357A I2S 扬声器测试音、回复提示音和音量调节。
+- 支持 INMP441 麦克风音量检测和唤醒测试。
+- 密钥放在本地 `src/secrets.h`，仓库只提供示例文件。
+
+## 硬件要求
 
 目标开发板：
 
@@ -30,7 +31,14 @@ ESP32-S3-WROOM-1 N16R8 固件，用于一个中文语音/网页对话机器人�
 - 板载摄像头接口
 - 双 USB-C
 
-已使用的主要引脚：
+外接模块：
+
+- INMP441 I2S 数字麦克风
+- MAX98357A I2S 功放
+- 4Ω/8Ω 小扬声器
+- microSD 卡，可选
+
+## 引脚分配
 
 | 功能 | 引脚 |
 | --- | --- |
@@ -44,7 +52,7 @@ ESP32-S3-WROOM-1 N16R8 固件，用于一个中文语音/网页对话机器人�
 | SD_MMC CMD | GPIO38 |
 | SD_MMC D0 | GPIO40 |
 
-## 接线
+## 接线说明
 
 INMP441 I2S 数字麦克风：
 
@@ -69,9 +77,43 @@ MAX98357A I2S 功放：
 | SD / EN | 3V3 或悬空 |
 | SPK+ / SPK- | 扬声器 |
 
-## 配置 DeepSeek API Key
+## 快速开始
 
-复制示例文件：
+安装 PlatformIO 后克隆项目：
+
+```bash
+git clone https://github.com/Davin-06/walle-esp32s3-firmware.git
+cd walle-esp32s3-firmware
+```
+
+编译固件：
+
+```bash
+pio run
+```
+
+烧录到开发板：
+
+```bash
+pio run -t upload
+```
+
+打开串口监视器：
+
+```bash
+pio device monitor
+```
+
+默认串口在 `platformio.ini` 中设置为 `COM8`。如果你的开发板端口不同，请修改：
+
+```ini
+upload_port = COM8
+monitor_port = COM8
+```
+
+## 配置联网对话
+
+复制示例密钥文件：
 
 ```powershell
 Copy-Item src\secrets.example.h src\secrets.h
@@ -83,54 +125,56 @@ Copy-Item src\secrets.example.h src\secrets.h
 #define WALL_E_DEEPSEEK_API_KEY "YOUR_DEEPSEEK_API_KEY"
 ```
 
-`src/secrets.h` 已被 `.gitignore` 忽略，不要提交它。
-
-如果没有配置 key，固件仍可编译，但联网聊天会提示需要配置 key。
-
-## 编译和烧录
-
-安装 PlatformIO 后，在仓库根目录执行：
-
-```powershell
-pio run
-pio run -t upload
-```
-
-默认串口在 `platformio.ini` 中设置为 `COM8`。如果你的开发板端口不同，修改：
-
-```ini
-upload_port = COM8
-monitor_port = COM8
-```
+`src/secrets.h` 已被 `.gitignore` 忽略，不要提交到 GitHub。如果没有配置 key，固件仍可编译，联网对话功能会提示需要配置服务端密钥。
 
 ## 使用方式
 
 1. 给 ESP32-S3 上电。
-2. 手机连接热点 `WALL-E-Setup`，密码 `12345678`。
-3. 打开 `http://192.168.4.1`。
-4. 在网页里扫描并连接目标 Wi-Fi。
-5. 如果是校园网，连接成功后让手机断开并重新连接 `WALL-E-Setup`，再使用“校园网认证助手”尝试打开认证入口。
-6. 在“文字对话测试”中测试聊天。
+2. 手机连接热点 `WALL-E-Setup`，默认密码 `12345678`。
+3. 打开 `http://192.168.4.1` 进入网页控制台。
+4. 扫描并连接目标 Wi-Fi。
+5. 如果是校园网或公共网络，可使用网页里的认证入口探测功能。
+6. 在“文字对话测试”中测试联网对话。
 7. 在“语音入口”中点击“播放测试音”测试扬声器。
-8. 打开“开发板麦克风唤醒测试”，对着 INMP441 说话，电平超过阈值后扬声器会播放回应提示音。
+8. 打开“开发板麦克风唤醒测试”，对着 INMP441 说话，观察电平和触发次数。
 
-## 关于麦克风唤醒测试
+## SD 卡资源
 
-当前固件做的是麦克风硬件链路验证：它检测声音强度，不是真正识别“瓦力”两个字。
+固件会尝试读取以下路径：
 
-如果要做到只在听到“瓦力”时唤醒，需要接入唤醒词模型或语音识别，例如 ESP-SR WakeNet、自训练唤醒词、或云端 ASR。
+```text
+/walle/manifest.json
+/walle/models/tiny1m/model.bin
+/walle/models/tiny1m/tokenizer.bin
+/walle/models/stories260k/model.bin
+/walle/models/stories260k/tokenizer.bin
+/walle/config/offline_responses.json
+```
 
-## 关于中文朗读
+这些模型和配置文件不随仓库发布，需要根据自己的硬件容量和功能需求准备。
 
-MAX98357A 只是功放，不能自己把文字变成语音。当前固件可以播放提示音，但还没有内置中文 TTS。
+## 当前能力边界
 
-要让开发板真正朗读中文回复，需要接入：
+- 麦克风测试检测的是声音强度，不是真正的固定唤醒词识别。
+- MAX98357A 是功放模块，不能单独把文字转换成语音。
+- 中文朗读需要额外接入云端 TTS 或适合 ESP32-S3 的离线 TTS 方案。
+- 校园网认证入口依赖不同学校的网关策略，可能需要按实际环境调整。
 
-- 云端 TTS API，将文本转成音频后播放
-- 或适合 ESP32-S3 的离线中文 TTS 模型
+## 安全说明
 
-## 注意
+仓库不包含真实 API key、Wi-Fi 密码、校园网账号或其他私人配置。请继续保持以下文件不进入版本库：
 
-- 不要把 API key、账号密码、校园网账号提交到 GitHub。
-- 校园网认证依赖学校网关策略，不同学校的跳转方式可能不一样。
-- SD 卡里的本地模型文件不随仓库发布，需自行准备。
+- `src/secrets.h`
+- `.pio/`
+- `.vscode/`
+- `*.bin`
+- `*.elf`
+- `*.log`
+
+## 适合用于
+
+- ESP32-S3 语音助手项目
+- PlatformIO 固件开发练习
+- Wi-Fi 配网门户实验
+- I2S 麦克风和扬声器测试
+- 桌面机器人或智能硬件原型
